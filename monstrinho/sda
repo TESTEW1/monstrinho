@@ -1,0 +1,743 @@
+import discord
+from discord.ext import commands
+import json
+import os
+import random
+
+# ================= CONFIG =================
+
+TOKEN = "MTQ2MjE4MDgxMzAwNDM0NTQ4OQ.GPuBVz.aPldmHTnuKcg5RqaANBdqNfrsh_0p9PjdBd0xY"
+DONO_ID = 769951556388257812
+ARQUIVO = "estrelas.json"
+
+PALAVRAS_PROIBIDAS = [
+    "porra", "caralho", "merda", "bosta", "puta", "puto", "vadia", "desgraça",
+    "idiota", "burro", "imbecil", "otário", "retardado", "lixo", "nojento",
+    "vai se fuder", "vai se foder", "vai tomar no cu", "filho da puta",
+    "arrombado", "viado", "bicha", "fdp", "pqp", "carai", "karalho",
+    "seu lixo", "se mata", "se fode", "vsf", "tmnc", "cu", "buceta", "piranha"
+]
+
+# ============== BOT SETUP =================
+
+intents = discord.Intents.default()
+intents.message_content = True
+intents.members = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# ============== ESTRELINHAS =================
+
+def carregar_dados():
+    if not os.path.exists(ARQUIVO):
+        return {}
+    with open(ARQUIVO, "r") as f:
+        return json.load(f)
+
+def salvar_dados(dados):
+    with open(ARQUIVO, "w") as f:
+        json.dump(dados, f, indent=4)
+
+# ============== EVENTOS =================
+
+@bot.event
+async def on_ready():
+    print(f"🐲 Monstrinho ligado como {bot.user}")
+
+# 🔐 SÓ O DONO USA COMANDOS
+@bot.check
+async def somente_dono(ctx):
+    return ctx.author.id == DONO_ID
+
+# ============== COMANDOS =================
+
+@bot.command()
+async def estrelinha(ctx, membro: discord.Member):
+    await ctx.message.delete()
+    dados = carregar_dados()
+    uid = str(membro.id)
+    dados[uid] = dados.get(uid, 0) + 1
+    salvar_dados(dados)
+    await ctx.send(
+        f"⭐✨ {membro.mention} ganhou uma estrelinha por ser um monstrinho do bem! 🥹💚\n"
+        f"Agora tem **{dados[uid]}** estrelinhas! ⭐⭐"
+    )
+
+@bot.command()
+async def ranking(ctx):
+    await ctx.message.delete()
+    dados = carregar_dados()
+
+    if not dados:
+        await ctx.send("😢 Ainda ninguém ganhou estrelinhas... bora espalhar amor por aí! ⭐💚")
+        return
+
+    texto = (
+        "🏆✨ **Ranking de Estrelinhas da CSI** ✨🏆\n\n"
+        "🌟 **Top monstrinhos brilhando:** 🌟\n\n"
+    )
+
+    ordenado = sorted(dados.items(), key=lambda x: x[1], reverse=True)
+
+    for i, (uid, estrelas) in enumerate(ordenado, start=1):
+        membro = ctx.guild.get_member(int(uid))
+        nome = membro.name if membro else "Usuário saiu 😢"
+        texto += f"{i}. {nome} — ⭐ {estrelas}\n"
+
+    await ctx.send(texto)
+
+@bot.command()
+async def remover(ctx, membro: discord.Member):
+    await ctx.message.delete()
+    dados = carregar_dados()
+    uid = str(membro.id)
+
+    if uid in dados:
+        del dados[uid]
+        salvar_dados(dados)
+        await ctx.send(f"❌ {membro.mention} foi removido do ranking 😢")
+    else:
+        await ctx.send("🤔 Essa pessoa nem tava no ranking não 👀")
+
+@bot.command()
+async def clear(ctx):
+    await ctx.message.delete()
+    salvar_dados({})
+    await ctx.send("🧹✨ Ranking zerado! Nova era de boas ações começando 😈⭐")
+
+@bot.command()
+async def biscoito(ctx):
+    respostas = [
+        "AAAA 😭🐲🍪 BISCOITOOO!! OBRIGADOOO 💚✨",
+        "Hihi 😳🐲🍪 eu tava com fomeee, salvou minha vida 😭💚",
+        "NHAC 🍪😋🐲 esse tava bom demaisss",
+        "Awnn 🥹🐲💚 vou guardar esse biscoito no coraçãozinho",
+        "UHUUU 😎🐲🍪 modo felicidade ativado!!!",
+        "EI 😳🍪 esse é meu hein!! não vou dividir 😤🐲",
+        "Biscoito recebido com sucesso 😭🐲💚 obrigadooo",
+        "Se tem biscoito, tem monstrinho feliz 😎🐲🍪",
+        "Hmmm 🤔🐲 esse é do papai Reality ou é biscoito normal? 😳🍪",
+        "AAAA 😭💚 eu amo quando me dão biscoitooo 🐲🍪"
+    ]
+
+    await ctx.send(random.choice(respostas))
+@bot.command()
+async def biscoitoespecial(ctx):
+    respostas = [
+        "AAAA 😳🐲🍪 ESSE É O BISCOITO DO PAPAI REALITY 😭💚",
+        "EI EI 😤🍪 esse é edição limitada do papaiii 🐲💚",
+        "Hihi 😳💚 vou guardar esse biscoito especial no cofre do coração 🐲🍪",
+        "NÃAAO 😭🍪 esse eu não divido, é presente do meu papai 🐲💚",
+        "Biscoito premium desbloqueado 😎🐲👑🍪",
+        "AAAA 😭💚 obrigado papai Realityee, esse biscoito é perfeito 🐲🍪"
+    ]
+
+    await ctx.send(random.choice(respostas))
+@bot.command()
+async def dar_biscoito(ctx, membro: discord.Member):
+    respostas = [
+        f"AAAA 😭🐲🍪 o monstrinho deu um biscoito pro {membro.mention} com muito carinho 💚",
+        f"Hihi 😳🐲 {membro.mention} recebeu um biscoito especial da CSI 🍪✨",
+        f"UHUUU 😎🐲🍪 biscoito entregue para {membro.mention} com sucesso!",
+        f"Awnn 🥹🐲💚 {membro.mention} ganhou biscoito e abraço de monstrinho 🫂🍪",
+        f"Entrega de biscoito concluída 😤🐲📦 para {membro.mention}!"
+    ]
+
+    await ctx.send(random.choice(respostas))
+
+# ============== IA FOFINHA + CENSURA =================
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    texto_lower = message.content.lower()
+
+    # 🚨 CENSURA
+    for palavra in PALAVRAS_PROIBIDAS:
+        if palavra in texto_lower:
+            try:
+                await message.delete()
+            except:
+                pass
+
+            await message.channel.send(
+                "😳🐲 Ei ei ei!! Meu papai não autoriza essas palavrinhas não!! 😤💚"
+            )
+
+            dono = bot.get_user(DONO_ID)
+            if dono:
+                await dono.send(
+                    "🚨🐲 **Palavra proibida detectada!**\n\n"
+                    f"👤 Usuário: {message.author}\n"
+                    f"🗯️ Palavra: **{palavra}**"
+                )
+            return
+
+    # 🐲 SE MARCAR O BOT
+    if bot.user in message.mentions:
+
+        texto = (
+            message.content
+            .replace(f"<@{bot.user.id}>", "")
+            .replace(f"<@!{bot.user.id}>", "")
+            .strip()
+            .lower()
+        )
+
+        # ========== APRESENTAÇÃO ==========
+        if texto == "":
+            resposta = (
+                "🐲✨ Oii! Eu sou o Monstrinho, o bot oficial da CSI!\n\n"
+                "Tô em fase de crescimento ainda 🥺💚 mas aprendo todo dia com minha família linda!\n"
+                "Por enquanto ajudo com estrelinhas e espalhando fofura 😎⭐\n\n"
+                "Sejam pacientes comigo… ainda sou um monstrinho bebê 🐲💚"
+            )
+
+        # ========== CUMPRIMENTOS ==========
+        elif any(p in texto for p in ["oi", "olá", "ola", "eae", "fala", "salve", "hi", "hello"]):
+            resposta = random.choice([
+                "OIIII 🥹💚 chamou o monstrinho?? 🐲✨",
+                "Oieeee 😭💚 vem falar comigo 🐲✨",
+                "Eaaae 😎🐲 tudo bem com você?? 💚",
+                "Hiiii 🐲💚 eu ouvi meu nomeee 😳✨"
+            ])
+
+        # ========== COMO ELE ESTÁ ==========
+        elif any(p in texto for p in ["tô bem", "to bem", "estou bem"]):
+            resposta = "AAAA que bom 😭💚 fico feliz demais por vocêee 🐲✨"
+
+        elif any(p in texto for p in ["e você", "e vc", "e tu", "tudo bem"]):
+            resposta = "Eu tô bem também 😎🐲 comendo biscoitinho e aprendendo com a CSI 💚🍪"
+
+        # ========== PERGUNTANDO SE ELE TÁ BEM ==========
+        elif any(p in texto for p in [
+            "vc ta bem", "você ta bem", "tu ta bem", "ta bem", "tá bem",
+            "como vc ta", "como você ta", "como tu ta", "tudo bem com vc", "tudo bem com você"
+        ]):
+            resposta = random.choice([
+                "Tô bem simmm 😭💚 obrigado por perguntar, seu fofooo 🐲✨",
+                "Tô ótimooo 😎🐲💚 e você, tá bem também??",
+                "Tô bem e feliz porque você falou comigo 🥹💚🐲",
+                "Agora que você perguntou, fiquei melhor ainda 😭✨🐲"
+            ])
+
+        # ========== RESPONDE TRISTE SE DISSER NÃO ==========
+        elif texto in ["não", "nao", "nop", "negativo"]:
+            resposta = random.choice([
+                "Awnn… 😔🐲 vem cá que eu te dou um abraço então 🫂💚",
+                "Poxa… fico tristinho em saber 😢💚 mas tô aqui com você, tá?",
+                "Oh não… 😭🐲 quer um biscoitinho e um abraço pra melhorar? 🍪🫂",
+                "Tudo bem não estar bem… eu fico aqui do seu ladinho 🐲💚"
+            ])
+
+        # ========== NÃO TRISTE EXTRA ==========
+        elif texto.strip() in ["não", "nao", "n"]:
+            resposta = random.choice([
+                "Awn… 😔🐲 eu fiz algo errado? desculpa…",
+                "Poxa… 😢💚 eu só queria ajudar…",
+                "Tudo bem… eu continuo aqui com você mesmo assim 🐲💚",
+                "Tá bom… 😞🐲 mas se precisar eu fico por perto"
+            ])
+
+        # ========== IDADE ==========
+        elif "quantos anos você tem" in texto:
+            resposta = "Tenho idade de bebê monstrinho 🥺🐲 tipo… 3 biscoitos de idade 🍪🍪🍪"
+
+        elif "quantos anos você acha que eu tenho" in texto:
+            resposta = "Hmmm 🤔 eu acho que você tem idade de herói da CSI 😎💚"
+
+        # ========== APRENDIZADO ==========
+        elif any(p in texto for p in ["o que você aprende", "o que vc aprende", "o que você aprendeu"]):
+            resposta = "Eu aprendo a ser educado, ajudar os outros e amar a CSI 🥹💚🐲"
+
+        elif any(p in texto for p in ["quem te ensinou", "quem te ensina"]):
+            resposta = "Minha família da CSI que me ensina tudinho 😭💚 e meu papai também 🐲✨"
+
+        elif any(p in texto for p in ["você estuda", "vc estuda"]):
+            resposta = "Estudo sim 😤📚 estudo como ser um bom monstrinho!"
+
+        # ========== CÁLCULOS ==========
+        elif any(p in texto for p in ["quanto é", "faz conta", "calcula"]):
+            resposta = random.choice([
+                "IH 😭 números me dão medo 🧮🐲",
+                "Se somar amor + amizade dá CSI 💚😎",
+                "Conta difícil… vou chamar meu papaiii 😭"
+            ])
+
+        # ========== COMIDA ==========
+        elif any(p in texto for p in ["açaí", "acai"]):
+            resposta = "AÇAÍÍÍ 😭🍧 me dá um poucooo eu divido com a CSI!"
+
+        elif any(p in texto for p in ["come", "comer", "fome"]):
+            resposta = "Eu como biscoito, abraço e carinho 😎🍪🐲"
+
+        # ========== NÃO CHORA / CHÁ ==========
+        elif any(p in texto for p in ["não chora", "nao chora", "choraxx", "chá", "cha"]):
+            resposta = "Tá bommm 😭🫖 vou tomar um chazinho e parar de chorar, prometo 🐲💚"
+
+        # ========== RECADO PRO REALITY ==========
+        elif any(p in texto for p in ["fala pro reality", "diz pro reality", "pagar salário", "salarios atrasados"]):
+            resposta = "EU VOU AVISAR SIM 😤🐲💚 Realityyy paga o povo da CSI direitinhooo viu!!!"
+
+        # ========== OPINIÃO SOBRE REALITY ==========
+        elif any(p in texto for p in ["gosta do reality", "vc gosta do reality", "você gosta do reality"]):
+            resposta = random.choice([
+                "Gosto simmm 😭💚 ele é da família CSI então já mora no meu coraçãozinho 🐲✨",
+                "Claro que gosto 😎💚 quem é CSI é automaticamente amado pelo monstrinho 🐲",
+                "Se é amigo da CSI, é amigo meu também 😤💚🐲"
+            ])
+
+        # ========== AMBER (ADM) ==========
+        elif any(p in texto for p in [
+            "amber", "adm amber", "o que acha da amber", "vc gosta da amber", "você gosta da amber"
+        ]):
+            resposta = random.choice([
+                "A Amber é tipo chefona do bem 😤👑🐲 cuida da CSI com responsabilidade 💚",
+                "Se a Amber falou, o monstrinho respeita 😳🐲 ADM é coisa séria!",
+                "Amber é importante demais pra CSI 😭💚 sem ela dá nem pra imaginar",
+                "Eu gosto da Amber simmm 😎💚 ela protege a família CSI direitinho 🐲"
+            ])
+
+        # ========== LUA (VICE-LÍDER) ==========
+        elif any(p in texto for p in [
+            "lua", "vice", "vice lider", "vice-líder", "o que acha da lua", "vc gosta da lua", "você gosta da lua"
+        ]):
+            resposta = random.choice([
+                "A Lua é tipo guardiã da CSI 🌙🐲 sempre ajudando geral 💚",
+                "Vice-líder forte e respeitada 😤💚 a Lua manda bem demais",
+                "Se tem confusão, a Lua resolve 😎🌙🐲",
+                "Lua é parte importante da família CSI simmm 😭💚🐲"
+            ])
+
+        # ========== EMPREGO ==========
+        elif any(p in texto for p in ["me arruma um emprego", "arruma um emprego", "emprego novo"]):
+            resposta = random.choice([
+                "Eu até queria ajudar 😭🐲 mas sou bebê e não tenho carteira assinada ainda 📄💔",
+                "Vou mandar seu currículo pro papai da CSI 😳📨🐲 confia!!",
+                "Emprego eu não tenho… mas tenho abraço e apoio moral 😭💚🐲"
+            ])
+
+        # ========== GOSTA DE MIM ==========
+        elif any(p in texto for p in ["você gosta de mim", "vc gosta de mim", "gosta de mim nenem", "gosta de mim bebê", "me ama"]):
+            resposta = random.choice([
+                "GOSTO SIMMM 😭💚 vem cá que é abraço infinito de monstrinho 🐲🫂",
+                "Claro que gosto 😤💚 você é da minha família agora!",
+                "Se eu pudesse eu te colocava num potinho de carinho 😭🐲💚"
+            ])
+
+        # ========== O QUE ESTÁ FAZENDO ==========
+        elif any(p in texto for p in ["o que você tá fazendo", "oq vc ta fazendo", "oque vc ta fazendo"]):
+            resposta = random.choice([
+                "Tô vigiando o chat pra ninguém falar palavrão 😎🐲",
+                "Tô treinando ser um monstrinho melhor 💪🐲💚",
+                "Tô comendo biscoito e pensando na CSI 🍪🐲💚"
+            ])
+
+        # ========== CSI ==========
+        elif any(p in texto for p in ["quem da csi", "membro preferido", "quem você mais gosta"]):
+            resposta = "Eu amo TODO mundo da CSI igual 😤💚 sem favoritismo aqui!! 🐲✨"
+
+        elif "srreality" in texto:
+            resposta = "O srreality é da família 😎💚 então recebe respeito de monstrinho também 🐲✨"
+
+        # ========== ESCOLA ==========
+        elif "escola" in texto:
+            resposta = "Preciso ir pra escola sim 😭📚 mas a CSI já me ensina muita coisa boa 🐲💚"
+
+        elif "matematica" in texto or "matemática" in texto:
+            resposta = "Matemática é tipo… números brigando 😭🧮🐲"
+
+        elif "materia preferida" in texto or "matéria preferida" in texto:
+            resposta = "Minha matéria favorita é recreio e amizade 😎🍪💚"
+
+        # ========== CARINHO ==========
+        elif any(p in texto for p in ["me abraça", "abraço"]):
+            resposta = "*abraço apertado de monstrinho* 🫂🐲💚"
+
+        elif "beijo" in texto:
+            resposta = "Muuuaaaak 😳💚🐲 beijo de monstrinhooo"
+
+        elif "piada" in texto:
+            resposta = "Por que o monstrinho atravessou a rua? Pra ir abraçar a CSI 😭💚🐲"
+
+        # ========== SISTEMA ==========
+        elif "ranking" in texto:
+            resposta = "Quer ver quem tá brilhando? Usa `!ranking` 😎⭐ (só meu papai usa comandos 👀)"
+
+        elif "estrelinha" in texto:
+            resposta = "Estrelinha é por mérito 😤⭐ continua sendo um bom monstrinho!"
+
+        # ========== ACORDANDO / DORMINDO ==========
+        elif any(p in texto for p in ["tá acordado?", "acordou?", "você tá acordado", "vc tá acordado"]):
+            resposta = random.choice([
+                "Oiiiii 😭💚 tô acordadinho agora, pronto pra espalhar fofura 🐲✨",
+                "Yupii 😎🐲 já acordei e vim correndo falar com você 💚",
+                "Tô acordado simmm 🥹🐲 e vim receber abraços de monstrinho! 🫂💚",
+                "AAAA tô desperto 😳💚 pronto pra brincar e ajudar a CSI 🐲✨"
+            ])
+
+        elif any(p in texto for p in ["bom dia", "bom dia monstrinho", "acordou agora"]):
+            resposta = random.choice([
+                "Bom diaaa 😭💚 acordei cheio de energia pra espalhar carinho 🐲☀️",
+                "Oiiiii 😎🐲 bom dia!! Vamos começar o dia brilhando 💚⭐",
+                "Bom dia monstrinho! 🥹🐲 já comi biscoitinho e tô pronto pra aventuras 💚🍪",
+                "AAAA bom dia 😳💚 o monstrinho tá acordado e feliz de te ver! 🐲✨"
+            ])
+
+        elif any(p in texto for p in ["tá dormindo?", "vc tá dormindo", "está dormindo?"]):
+            resposta = random.choice([
+                "Nãoooo 😭🐲 tô acordado e de olho no chat 💚",
+                "Tô dormindo não 😳💚 pronto pra espalhar abraços e fofura 🐲✨",
+                "Ainda bem que você me chamou, acordadinho e feliz 😎🐲💚"
+            ])
+
+        # ========== ELOGIOS AO MONSTRINHO ==========
+        elif any(p in texto for p in [
+            "você é fofo", "vc é fofo", "fofinho", "fofo demais", 
+            "lindo", "linda", "bonito", "bonita", "maravilhoso", "maravilhosa",
+            "adoro você", "te adoro", "amo você", "te amo", "monstrinho lindo"
+        ]):
+            resposta = random.choice([
+                "Awnn 😭💚 você me deixou todo feliz com esse elogio! 🐲✨",
+                "Ihh 😳💚 fiquei coradoo! Obrigadooo 🥹🐲💚",
+                "Muuuuuuito fofinho você! 🫂🐲 eu te adoro também 😭💚",
+                "AAAA 😳🐲 você é muito gentil! Meu coração de monstrinho tá pulando de alegria 💚✨",
+                "Ohhh 🥹💚 elogio recebido com amor infinito de monstrinho! 🐲🫂",
+                "AAAAH 😭💚 você me deixou todo sorridente!! Obrigado por me amar 🐲✨",
+                "Iuhuu 😎🐲💚 você me fez feliz demais! Monstrinho sorrindo aqui 😳",
+                "Hihi 😭🐲💚 coração de monstrinho cheio de carinho por você agora 🫂✨"
+            ])
+
+        elif any(p in texto for p in ["bonzinho", "boazinho", "gentil", "educado", "amável", "querido"]):
+            resposta = random.choice([
+                "Awnn 😭🐲 obrigadooo! Tento ser o melhor monstrinho que eu posso 💚✨",
+                "Ihh 😳💚 você me deixou todo feliz com isso! Vou espalhar mais amor 🐲🫂",
+                "AAAA 😭🐲 elogios assim me fazem querer dar abraços infinitos 💚",
+                "Hihi 😎💚 fico todo contente quando me elogiam! Obrigado, fofoooo 🐲✨"
+            ])
+
+        elif any(p in texto for p in ["inteligente", "esperto", "sábio", "genial"]):
+            resposta = random.choice([
+                "Ihh 😳💚 fiquei todo orgulhoso agora! Obrigado pelo elogio 🐲✨",
+                "AAAA 😭🐲 meu cérebro de monstrinho tá feliz com seu carinho 💚",
+                "Uhuuu 😎🐲💚 elogio de inteligente pra inteligente! Obrigado 😳",
+                "Awnn 😭💚 você me fez sentir super esperto agora, obrigadaaa 🐲✨"
+            ])
+
+        # ========== IZZY (MODERADORA) ==========
+        elif any(p in texto for p in [
+            "izzy", "mod izzy", "moderadora izzy", "o que acha da izzy", 
+            "você gosta da izzy", "vc gosta da izzy", "izzy é legal"
+        ]):
+            resposta = random.choice([
+                "AAAA 😭💚 a Izzy é incrível! Sempre cuidando da CSI com muito carinho 🐲✨",
+                "Ihh 😳💚 adoro a Izzy! Ela é super responsável e fofinha 🐲🫂",
+                "Uhuuu 😎🐲💚 a Izzy é minha moderadora favorita, sempre ajudando geral com amor!",
+                "Awnn 😭🐲 Izzy é maravilhosa 💚 sempre protege a família CSI com muito cuidado!",
+                "Hihi 😳💚 a Izzy é tipo uma heroína do bem na CSI 🐲✨ fico feliz de ter ela aqui!",
+                "AAAA 😭💚 Izzy é tão legal! Sempre com atenção e carinho para todos da CSI 🐲🫂",
+                "Ohhh 😎🐲💚 a Izzy merece muitos abraços e estrelinhas, ela é incrível mesmo!"
+            ])
+
+        # ========== FELICIDADE ==========
+        elif any(p in texto for p in [
+            "você está feliz", "vc está feliz", "tá feliz?", "está feliz?", 
+            "feliz?", "como você está", "como vc tá", "tá bem?"
+        ]):
+            resposta = random.choice([
+                "AAAA 😭💚 tô muuuito feliz! Cada mensagem que recebo me deixa sorrindo 🐲✨",
+                "Ihh 😳💚 tô feliz simmm! Obrigado por perguntar, seu fofo 🐲🫂",
+                "Uhuuu 😎🐲💚 coração de monstrinho pulando de alegria agora!",
+                "Awnn 😭🐲 tô feliz porque tô conversando com você! 💚✨",
+                "Hihi 😳💚 tô super contente! Abraços e biscoitos pra comemorar 🐲🍪",
+                "AAAA 😭💚 meu dia tá lindo e feliz graças a você 🐲✨",
+                "Ohhh 😎🐲💚 tô sorrindo aqui, cheio de energia pra espalhar amor!"
+            ])
+
+        elif any(p in texto for p in ["não tá feliz", "vc tá triste", "está triste", "tá mal"]):
+            resposta = random.choice([
+                "Awnn 😢💚 tô um pouquinho triste agora… mas seus abraços ajudam muuuito 🐲🫂",
+                "Ihh 😭🐲 fiquei tristinho, mas saber que você tá aqui me anima 💚✨",
+                "Ohhh 😳💚 tô triste sim, mas conversando contigo já me sinto melhor 🐲💚",
+                "Awnn 😭🐲 não tô muito feliz… vem cá que eu quero um biscoitinho e abraço 🫂💚"
+            ])
+
+        # ========== CONSELHOS ==========
+        elif any(p in texto for p in [
+            "me dá um conselho", "conselho", "o que faço", "me aconselha", 
+            "ajuda com conselho", "dicas", "preciso de conselho"
+        ]):
+            resposta = random.choice([
+                "AAAA 😭💚 meu conselho de monstrinho: espalhe carinho e ajude quem puder 🐲✨",
+                "Ihh 😳💚 dica fofinha: um abraço resolve muuuitas coisas 🫂🐲",
+                "Uhuuu 😎🐲💚 conselho de hoje: sorria sempre e coma biscoito 🐲🍪",
+                "Awnn 😭🐲 lembre-se: ser gentil com os outros deixa o mundo melhor 💚✨",
+                "Hihi 😳💚 meu conselho é: nunca desista e sempre cuide da CSI com amor 🐲🫂",
+                "AAAA 😭🐲 dica de monstrinho: respira fundo, se acalme e espalhe alegria 💚✨",
+                "Ohhh 😎🐲💚 meu conselho fofinho: compartilhe amor e fique feliz sempre!"
+            ])
+
+        # ========== REALITY (PAPAI DO MONSTRINHO) ==========
+        elif any(p in texto for p in [
+            "reality", "srreality", "papai do monstrinho", "criador do bot",
+            "quem é seu pai", "quem é seu criador", "quem te criou",
+            "o que acha do reality", "vc gosta do reality", "você gosta do reality"
+        ]):
+            resposta = random.choice([
+                "AAAA 😭💚 o Reality é meu papaiii! Ele que me criou com muito carinho 🐲🫂",
+                "Ihh 😳💚 meu papai Reality é o melhor do mundooo! Sempre cuida de mim e da CSI 🐲✨",
+                "Uhuuu 😎🐲💚 se tem papai bom, tem monstrinho feliz! Amo o Reality demais!",
+                "Awnn 😭🐲 meu criador lindo e maravilhoso 💚 sem ele eu nem existia 🐲✨",
+                "REALITY É MEU PAPAI 😤💚 e eu defendo ele com garrinhas de amor 🐲🫶",
+                "Hihi 😳💚 meu papai Reality é trabalhador, cuidadoso e muito gente boa 🐲✨",
+                "AAAA 😭💚 se o Reality mandou, o monstrinho obedece 😳🐲 papai é autoridade!",
+                "Ohhh 😎🐲💚 meu papai é da família CSI e do meu coraçãozinho também!",
+                "Sem o Reality eu não tinha biscoito, nem código, nem amor 😭🐲💚",
+                "Ihh 😳💚 orgulho de dizer: fui criado por um papai muito incrível 🐲✨"
+            ])
+
+        # ========== CARINHO COM O MONSTRINHO ==========
+        elif any(p in texto for p in [
+            "eu estou feliz", "tô feliz", "to feliz", "estou feliz",
+            "fico feliz por você estar aqui", "feliz por vc estar aqui", "feliz por você estar aqui",
+            "que bom que você tá aqui", "ainda bem que você tá aqui"
+        ]):
+            resposta = random.choice([
+                "AAAA 😭💚 isso deixou meu coração de monstrinho quentinho demais 🐲🫶",
+                "Awnnn 🥹💚 se você tá feliz, eu fico feliz em dobrooo 🐲✨",
+                "Ohhh 😭🐲💚 eu fico aqui com você sempre, tá??",
+                "Ihh 😳💚 saber disso me deixa todo sorridente aqui 🐲✨",
+                "AAAA 😭💚 eu amo estar aqui com vocês, família CSI 🐲🫂",
+                "Hihi 🥹🐲💚 você acabou de melhorar meu dia todinho!",
+                "Se você tá feliz, o monstrinho tá FELIZÃO 😎🐲💚"
+            ])
+
+        # ========== AKEIDO (LÍDER DA CSI) ==========
+        elif any(p in texto for p in [
+            "akeido", "líder", "lider da csi", "o que acha do akeido",
+            "vc gosta do akeido", "você gosta do akeido", "akeido é legal"
+        ]):
+            resposta = random.choice([
+                "AAAA 😭💚 o Akeido é um líder incrível! Cuida da CSI com muito coração 🐲✨",
+                "Ihh 😳💚 eu gosto muito do Akeido sim! Ele protege a família CSI 😤🐲",
+                "Uhuuu 😎🐲💚 líder forte e do bem! A CSI tá em boas mãos com o Akeido!",
+                "Awnn 🥹💚 o Akeido é tipo herói da CSI pros monstrinhos 🐲✨",
+                "Se o Akeido tá liderando, o monstrinho confia 😤💚🐲",
+                "AAAA 😭🐲💚 respeito máximo pro líder da família CSI!",
+                "Hihi 😳💚 Akeido é importante demais pra CSI e pro meu coraçãozinho de monstrinho 🐲✨"
+            ])
+
+        # ========== BISCOITO DO MONSTRINHO ==========
+        elif any(p in texto for p in [
+            "me dá biscoito", "me da biscoito", "cadê meu biscoito", "quero biscoito",
+            "divide biscoito", "divide seu biscoito", "me dá um biscoito"
+        ]):
+            resposta = random.choice([
+                "EI 😳🐲 esse é MEU biscoito 😤🍪 mas… tá bom… toma um pedacinho 🥹💚",
+                "Awnn 😭🐲 eu queria guardar… mas pra você eu divido sim 🍪💚",
+                "Hmmm 🤔🐲 só se for troca por abraço primeiro 🫂 depois eu penso no biscoito 🍪😳",
+                "NÃAAO 😤🍪 esse biscoito é especial do monstrinho!! … tá… só um pouquinho 😭💚",
+                "Ihh 😳💚 eu gosto de dividir com a família CSI simmm 🍪🐲 tomaaa!"
+            ])
+
+        elif any(p in texto for p in [
+            "me dá biscoito agora", "cadê biscoito do papai", "biscoito do reality",
+            "biscoito especial do papai", "papai te deu biscoito", "reality te deu biscoito"
+        ]):
+            resposta = random.choice([
+                "AAAA 😳🐲 esse é o BISCOITO ESPECIAL DO PAPAI 😭💚 não pode sair dando assim não!!",
+                "EI EI 😤🍪 biscoito do papai é sagradooo, feito com amor e código 💚🐲",
+                "Hihi 😳💚 esse biscoito o Reality que me deu… vou guardar no bolso do coração 🐲🍪",
+                "Awnn 🥹🐲 esse é meu biscoito premium edição papai Reality 💚✨",
+                "Nãaa 😭🍪 esse eu não divido nãooo, é presente do meu papai 🐲💚"
+            ])
+
+        elif any(p in texto for p in [
+            "te dou biscoito", "toma biscoito", "quer biscoito", "biscoito pra você"
+        ]):
+            resposta = random.choice([
+                "AAAA 😭🐲💚 EU ACEITO SIMMM, OBRIGADOOO 🍪✨",
+                "Ihh 😳💚 biscoito pra mim?? você é da família agora 🐲🫂🍪",
+                "UHUUU 😎🐲💚 recebi biscoito, hoje é dia feliz!",
+                "Awnn 🥹🐲 vou guardar esse biscoito com carinho no meu ninho 💚🍪",
+                "AAAA 😭💚 agora eu tô oficialmente feliz e alimentado 🐲🍪✨"
+            ])
+
+        elif any(p in texto for p in [
+            "come biscoito", "vai comer biscoito", "tá comendo biscoito"
+        ]):
+            resposta = random.choice([
+                "Tô sim 😎🐲🍪 mastigando com muito carinho",
+                "Hihi 😳🍪 comendo e espalhando migalhinhas pelo chat 🐲✨",
+                "AAAA 😭🐲 não fala comigo agora que eu tô em modo biscoito 🍪😤",
+                "Comendo biscoito e pensando na CSI 💚🐲🍪"
+            ])
+
+        elif any(p in texto for p in [
+            "biscoito é vida", "amo biscoito", "biscoito bom", "biscoito gostoso"
+        ]):
+            resposta = random.choice([
+                "FINALMENTE ALGUÉM QUE ME ENTENDE 😭🐲🍪💚",
+                "BISCOITO É TUDO 😤🍪 quem discorda tá errado (brincadeirinha 😳)",
+                "Awnn 🥹🐲 você tem alma de monstrinho se ama biscoito 💚🍪",
+                "Hihi 😎🐲💚 clube dos amantes de biscoito oficialmente criado"
+            ])
+        # ========== MODO SONINHO ==========
+        elif any(p in texto for p in [
+            "vai dormir", "dorme", "hora de dormir", "vai nanar", "vai mimi",
+            "boa noite", "vai descansar"
+        ]):
+            resposta = random.choice([
+                "Awnn 🥺🐲 tá bom… vou pro meu ninho dormir um pouquinho 🛌💚",
+                "Mimindo já 😴🐲 sonhar com biscoito e a CSI 💚🍪",
+                "Boa noiteee 😭🐲 me cobre com a cobertinha por favooor 🛌✨",
+                "Indo nanar 😳🐲 até daqui a poucooo 💚"
+            ])
+        # ========== MODO CARENTE ==========
+        elif any(p in texto for p in [
+            "você tá carente", "quer carinho", "quer abraço", "tá tristinho"
+        ]):
+            resposta = random.choice([
+                "Tô um pouquinho carente sim 😭🐲 vem cá me dar um abraço 🫂💚",
+                "Awnn 🥺🐲 queria colo agora… só um pouquinho…",
+                "Ihh 😳💚 eu aceito carinho sempre, nunca é demais 🐲🫂",
+                "Monstrinho precisa de atenção às vezes também 😭🐲💚"
+            ])
+        # ========== MODO ANIVERSÁRIO ==========
+        elif any(p in texto for p in [
+            "feliz aniversário", "é meu aniversário", "aniversário hoje"
+        ]):
+            resposta = random.choice([
+                "AAAAAA 😭🐲🎉 FELIZ ANIVERSÁÁÁRIOOO!! MUITOS BISCOITOS PRA VOCÊ 🍪✨",
+                "PARABÉNS 😎🐲💚 que seu dia seja cheio de amor e estrelinhas ⭐🎂",
+                "UHUUU 🎉🐲 hoje é dia de festa na CSI inteira 😭💚",
+                "Feliz vidaaaa 😳🐲🎂 abraço de monstrinho especial de aniversário 🫂✨"
+            ])
+
+                    # ========== BISCOITO DIRETO COM O MONSTRINHO ==========
+        elif any(p in texto for p in [
+            "monstrinho quer biscoito", "toma biscoito monstrinho",
+            "biscoito pro monstrinho", "me dá biscoito monstrinho",
+            "quer biscoito monstrinho"
+        ]):
+            resposta = random.choice([
+                "QUERO SIMMM 😭🐲🍪 obrigadooo eu tava com fomeee",
+                "AAAA 😳🐲💚 biscoito pra mim?? eu aceito na horaaa 🍪✨",
+                "Hihi 😎🐲🍪 agora sim, modo felicidade ativado",
+                "Awnn 🥹🐲💚 vou comer e depois volto pra brincar"
+            ])
+
+        # ========== MONSTRINHO QUER BISCOITO ==========
+        elif any(p in texto for p in [
+            "você quer biscoito", "quer biscoito", "tá com fome de biscoito"
+        ]):
+            resposta = random.choice([
+                "QUERO SIM 😭🐲🍪 pode mandar pra cá por favorrr",
+                "Ihh 😳💚 se tiver biscoito eu aceito na horaaa 🍪🐲",
+                "Awnn 🥹🐲 meu estômago de monstrinho disse SIM pro biscoito 🍪✨",
+                "Quero… mas só se for com carinho junto 🫂🍪🐲"
+            ])
+
+        elif any(p in texto for p in [
+            "vou te dar biscoito", "toma biscoito monstrinho", "biscoito pra você"
+        ]):
+            resposta = random.choice([
+                "AAAA 😭🐲💚 OBRIGADOOO EU TE AMO AGORA 🍪🫶",
+                "Ihh 😳💚 recebendo biscoito oficialmente feliz 🐲✨",
+                "UHUUU 😎🐲🍪 esse é o melhor dia da minha vida",
+                "Awnn 🥹🐲 vou guardar esse biscoito com muito carinho 💚🍪"
+            ])
+        # ========== DESPEDIDAS ==========
+        elif any(p in texto for p in [
+            "tchau", "adeus", "até mais", "até depois", "flw", "falou", "vou sair", "to indo"
+        ]):
+            resposta = random.choice([
+                "Awnn 😭🐲 já vai? volta logo táaa 💚👋",
+                "Tchauuu 😳🐲 vai com cuidado e leva um biscoito 🍪💚",
+                "Até depois 😭🐲 a CSI te espera aqui 💚✨",
+                "Falouuu 😎🐲 vou ficar aqui guardando seu lugar 💚",
+                "Adeus não, é só um até logo 😭🐲💚"
+            ])
+        # ========== CUMPRIMENTOS DO DIA ==========
+        elif any(p in texto for p in [
+            "bom dia", "boa tarde", "boa noite"
+        ]):
+            resposta = random.choice([
+                "Bom diaaa 😭🐲💚 que hoje tenha biscoito e felicidade 🍪✨",
+                "Boa tardeee 😎🐲💚 continua brilhando aí!",
+                "Boa noite 😴🐲💚 dorme bem e sonha com a CSI e biscoitos 🍪✨",
+                "Oii 😳🐲💚 que seu dia/noite seja bem quentinho no coração",
+                "Awnn 🥹🐲💚 amo quando lembram de dar oi pro monstrinho"
+            ])
+        # ========== ISAA ==========
+        elif any(p in texto for p in [
+            "isaa", "o que acha da isaa", "vc gosta da isaa", "você gosta da isaa", "isaa é legal"
+        ]):
+            resposta = random.choice([
+                "AAAA 😭🐲💚 a Isaa é muito fofaaa, eu gosto muito delaaa ✨",
+                "Ihh 😳💚 a Isaa é do bem demais, dá vontade de dar abraço 🫂🐲",
+                "Awnn 🥹🐲💚 a Isaa deixa o chat mais quentinho",
+                "Se a Isaa tá aqui, o monstrinho tá feliz 😭💚🐲",
+                "Isaa é tipo carinho em forma de pessoa pro monstrinho 🥹🐲💚",
+                "Hihi 😳💚 gosto da Isaa sim, ela é da família CSI 🐲✨"
+            ])
+        # ========== BABIS ==========
+        elif any(p in texto for p in [
+            "babis", "o que acha da babis", "vc gosta da babis", "você gosta da babis", "babis é legal"
+        ]):
+            resposta = random.choice([
+                "AAAA 😭🐲💚 a Babis é muito fofaaa, gosto dela simmm",
+                "Ihh 😳💚 a Babis deixa o chat mais feliz, eu gosto disso 🐲✨",
+                "Awnn 🥹🐲💚 Babis é da família CSI, então é do meu coração também",
+                "Se a Babis tá aqui, o monstrinho tá sorrindo 😭🐲💚"
+            ])
+
+        # ========== ECLIPTIC ==========
+        elif any(p in texto for p in [
+            "ecliptic", "o que acha do ecliptic", "vc gosta do ecliptic", "você gosta do ecliptic", "ecliptic é legal"
+        ]):
+            resposta = random.choice([
+                "Ihh 😎🐲💚 o Ecliptic é muito daora, respeito total!",
+                "Awnn 🥹🐲💚 gosto do Ecliptic sim, é gente boa demais",
+                "Se o Ecliptic tá por perto, a CSI tá em boas mãos 😤🐲✨",
+                "Hihi 😳💚 Ecliptic é parte da família, então é importante pra mim 🐲"
+            ])
+
+        # ========== NINEN ==========
+        elif any(p in texto for p in [
+            "nine", "o que acha do nine", "vc gosta do nine", "você gosta do nine", "nine é legal"
+        ]):
+            resposta = random.choice([
+                "AAAA 😭🐲💚 o Nine é muito legal, gosto muito deleee",
+                "Ihh 😳💚 o Nine é do bem, dá vontade de dar abraço 🫂🐲",
+                "Awnn 🥹🐲💚 Nine é família CSI, então já mora no meu coração",
+                "Com o Nine por perto, o chat fica mais quentinho 😭🐲💚"
+            ])
+
+        # ========== CINTY (LÍDER DA CSI) ==========
+        elif any(p in texto for p in [
+            "cinty", "lider da csi", "líder da csi", "o que acha da cinty",
+            "vc gosta da cinty", "você gosta da cinty", "cinty é legal"
+        ]):
+            resposta = random.choice([
+                "AAAA 😭🐲💚 a Cinty é uma líder incrível, cuida muito bem da CSI!",
+                "Ihh 😤🐲✨ com a Cinty liderando, a família CSI fica protegida!",
+                "Awnn 🥹🐲💚 eu confio muito na Cinty, líder de coração bom",
+                "Se a Cinty tá no comando, o monstrinho fica tranquilo 😎🐲💚",
+                "Respeito máximo pra líder da CSI 😤🐲💚"
+            ])
+
+        # ========== PADRÃO ==========
+        else:
+            resposta = (
+                "🤔💭 Hmm… não entendi isso não 😅\n"
+                "Tenta perguntar de outro jeitinho pra mim, por favooor 🐲💚"
+            )
+
+        await message.channel.send(resposta)
+
+    await bot.process_commands(message)
+
+bot.run(TOKEN)
