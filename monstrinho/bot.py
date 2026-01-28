@@ -5,7 +5,8 @@ import asyncio
 
 # ================= CONFIG =================
 
-TOKEN = "MTQ2MjE4MDgxMzAwNDM0NTQ4OQ.GPuBVz.aPldmHTnuKcg5RqaANBdqNfrsh_0p9PjdBd0xY"  # TROCA ISSO
+import os
+TOKEN = os.getenv("TOKEN")  # TROCA ISSO
 
 DONO_ID = 769951556388257812
 
@@ -288,3 +289,4 @@ async def on_message(message):
 # ============== START =================
 
 bot.run(TOKEN)
+
