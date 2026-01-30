@@ -5,12 +5,15 @@ import asyncio
 import os
 
 # ================= INTENTS =================
+# ============== BOT SETUP =================
 
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
+intents.guilds = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
+
 
 # ================= CONFIG =================
 
@@ -297,6 +300,8 @@ async def on_message(message):
 
 # ============== START =================
 
+print("TOKEN carregado?", TOKEN is not None)
 bot.run(TOKEN)
+
 
 
