@@ -1,1 +1,1 @@
-worker: python monstrinho/bot.py
+worker: python bot.py
