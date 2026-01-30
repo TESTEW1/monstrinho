@@ -2,13 +2,22 @@ import discord
 from discord.ext import commands
 import random
 import asyncio
+import os
+
+# ================= INTENTS =================
+
+intents = discord.Intents.default()
+intents.message_content = True
+intents.members = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 # ================= CONFIG =================
 
-import os
-TOKEN = os.getenv("TOKEN")  # TROCA ISSO
+TOKEN = os.getenv("TOKEN")
 
 DONO_ID = 769951556388257812
+
 
 CANAL_GERAL = "💭・chat-geral"
 CANAL_LIBERACAO = "✅・chat-staff-liberação"
@@ -289,4 +298,5 @@ async def on_message(message):
 # ============== START =================
 
 bot.run(TOKEN)
+
 
